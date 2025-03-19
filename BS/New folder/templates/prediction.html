@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prediction Result</title>
+</head>
+<body>
+    <h1>Prediction Result</h1>
+    <p>URL: {{ url }}</p>
+    <p>Prediction: {% if prediction == 1 %}Phishing{% else %}Legitimate{% endif %}</p>
+    <!-- You can add more details about the prediction, such as probability, etc. -->
+</body>
+</html>

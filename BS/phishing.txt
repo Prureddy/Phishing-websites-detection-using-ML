@@ -1,0 +1,142 @@
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+import random
+df = pd.read_csv('https://raw.githubusercontent.com/Govind155/Web-Phishing-Detection-/main/dataset.csv')
+df.head()
+sns.heatmap(df[0:120].isnull(), cmap= 'viridis')
+plt.savefig('heatmap.png')
+df.describe()
+print(df.corr()['Result'].sort_values())
+# Remove features having correlation coeff. between +/- 0.03
+df.drop(['Favicon','Iframe','Redirect',
+                'popUpWidnow','RightClick','Submitting_to_email'],axis=1,inplace=True)
+print(len(df.columns))
+sns.heatmap(df.corr())
+plt.savefig('corr.png')
+l = [1,-1]
+length = len(df)
+# df.head()
+for i in range(length):
+  if(df['having_At_Symbol'].isnull().sum()):
+    rand = random.randint(0,1)
+    df['having_At_Symbol'][i] = l[rand]
+
+df.head()
+# print(df['having_At_Symbol'])
+sns.heatmap(df.isnull())
+plt.savefig('clean_heatmap.png')
+sns.set_style('whitegrid')
+sns.countplot(x='having_At_Symbol',data=df)
+sns.countplot(x='having_IPhaving_IP_Address',data=df)
+sns.countplot(x='web_traffic', data=df)
+sns.countplot(x='Result', data=df)
+sns.countplot(x='Links_pointing_to_page', data=df)
+sns.countplot(x='Result', hue='having_At_Symbol', data=df)
+sns.distplot(df['Result'], color='darkred')
+sns.distplot(df['Links_pointing_to_page'])
+sns.displot(df['web_traffic'])
+a=len(df[df.Result==0])
+b=len(df[df.Result==-1])
+c=len(df[df.Result==1])
+print("Count of Legitimate Websites = ", b)
+print("Count of Suspicious Websites = ", a)
+print("Count of Phishy Websites = ", c)
+df.drop(['index'],axis=1,inplace=True)
+print(len(df.columns))
+df.plot.hist(subplots=True,layout=(5,5),figsize=(15, 15), bins=20)
+df.corr()
+from sklearn.model_selection import train_test_split,cross_val_score
+X= df.drop(columns='Result')
+X.head()
+Y=df['Result']
+Y=pd.DataFrame(Y)
+Y.head()
+train_X,test_X,train_Y,test_Y=train_test_split(X,Y,test_size=0.40,random_state=10)
+print("Training set has {} samples.".format(train_X.shape[0]))
+print("Testing set has {} samples.".format(test_X.shape[0]))
+""from sklearn.ensemble import RandomForestClassifier
+rfc=RandomForestClassifier()
+model_4=rfc.fit(train_X,train_Y)
+rfc_predict=model_4.predict(test_X)
+print('The accuracy of Random Forest Classifier is: ' , 100.0 * accuracy_score(rfc_predict,test_Y))
+print(classification_report(rfc_predict,test_Y))
+plot_confusion_matrix(test_Y, rfc_predict)
+RocCurveDisplay.from_estimator(model_4,test_X, test_Y) ""
+
+from sklearn.svm import SVC
+svc=SVC()
+model_5=svc.fit(train_X,train_Y)
+svm_predict=model_5.predict(test_X)
+print('The accuracy of SVM Classifier is: ', 100.0 * accuracy_score(svm_predict,test_Y))
+print(classification_report(svm_predict,test_Y))
+
+
+
+
+
+
+# Purpose - This file is used to create a classifier and store it in a .pkl file. You can modify the contents of this
+# file to create your own version of the classifier.
+
+import numpy as np
+
+from sklearn.ensemble import RandomForestClassifier
+# from sklearn.metrics import accuracy_score, classification_report
+# from sklearn import metrics
+
+import joblib
+
+labels = []
+data_file = open('dataset\Training Dataset.arff').read()
+data_list = data_file.split('\r\n')
+data = np.array(data_list)
+data1 = [i.split(',') for i in data]
+data1 = data1[0:-1]
+for i in data1:
+    labels.append(i[30])
+print(data1)
+data1 = np.array(data1)
+features = data1[:,:-1]
+# Choose only the relevant features from the data set.
+features = features[:, [0, 1, 2, 3, 4, 5, 6, 8, 9, 11, 12, 13, 14, 15, 16, 17, 22, 23, 24, 25, 27, 29]]
+features = np.array(features).astype(np.float)
+
+features_train = features
+labels_train = labels
+# features_test=features[10000:]
+# labels_test=labels[10000:]
+
+
+print("\n\n ""Random Forest Algorithm Results"" ")
+clf4 = RandomForestClassifier(min_samples_split=7, verbose=True)
+clf4.fit(features_train, labels_train)
+importances = clf4.feature_importances_
+std = np.std([tree.feature_importances_ for tree in clf4.estimators_], axis=0)
+indices = np.argsort(importances)[::-1]
+# Print the feature ranking
+print("Feature ranking:")
+for f in range(features_train.shape[1]):
+    print("%d. feature %d (%f)" % (f + 1, indices[f], importances[indices[f]]))
+
+# pred4=clf4.predict(features_test)
+# print(classification_report(labels_test, pred4))
+# print 'The accuracy is:', accuracy_score(labels_test, pred4)
+# print metrics.confusion_matrix(labels_test, pred4)
+
+# sys.setrecursionlimit(9999999)
+joblib.dump(clf4, 'classifier/random_forest.pkl', compress=9)
+
+
+
+
+
+
+
+
+
+
+
+
+
